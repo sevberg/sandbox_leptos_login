@@ -3,7 +3,10 @@ use leptos::*;
 
 use crate::util::{
     bindings::console_log_str,
-    user_management::{login, logout, UserData, UserDataReadSignal, UserDataWriteSignal},
+    cookie_management::{search_for_cookie, AUTH_TOKEN_COOKIE_NAME},
+    user_management::{
+        echo_user, login, logout, UserData, UserDataReadSignal, UserDataWriteSignal,
+    },
 };
 
 #[derive(PartialEq, Clone)]
@@ -161,6 +164,53 @@ pub fn ControlArea() -> impl IntoView {
             LoginAttemptStatus::Succeeded(user_data) => set_user_data.set(Some(user_data)),
             _ => set_user_data.set(None),
         }
+    });
+
+    // Check if is already logged-in from a previous session. If so, update the user-data signal. This
+    // requires talking with the backend server, and so must be async (hence create_local_resource)
+    let cached_user_data = create_local_resource(
+        || (),
+        |_| async move {
+            console_log_str("Reading cookies".to_string());
+            let auth_cookie = match search_for_cookie(AUTH_TOKEN_COOKIE_NAME) {
+                Ok(search_result) => {
+                    console_log_str("Found cookie".to_string());
+                    search_result
+                }
+                Err(err) => {
+                    console_log_str(format!("Error reading cookies -- {}", err.to_string()));
+                    None
+                }
+            };
+
+            let user_data = match auth_cookie {
+                Some(_) => match echo_user().await {
+                    Ok(val) => val,
+                    Err(err) => {
+                        console_log_str(format!("Error pinging user data -- {}", err.to_string()));
+                        None
+                    }
+                },
+                None => None,
+            };
+
+            user_data
+        },
+    );
+    create_effect(move |_| match cached_user_data.get() {
+        Some(user_data) => {
+            match user_data.clone() {
+                Some(val) => {
+                    console_log_str(format!(
+                        "Setting user from previous session -- {}",
+                        val.username
+                    ));
+                    set_login_tracker.set(LoginAttemptStatus::Succeeded(val));
+                }
+                None => console_log_str(format!("No user from previous session")),
+            };
+        }
+        None => console_log_str(format!("User data cache has not finished loading")),
     });
 
     // View generation

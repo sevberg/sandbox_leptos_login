@@ -28,7 +28,7 @@ pub type UserDataWriteSignal = WriteSignal<Option<UserData>>;
 /// user-data, which may evaluate to 'None' if the user is not logged-in. Alternatively,
 /// it could fail (e.g. if teh backend server is unreachable). Hence Result -> Option -> UserData  
 pub async fn echo_user() -> anyhow::Result<Option<UserData>> {
-    TimeoutFuture::new(500).await;
+    TimeoutFuture::new(250).await;
 
     let auth_cookie = search_for_cookie(AUTH_TOKEN_COOKIE_NAME)?;
 
@@ -53,7 +53,7 @@ pub async fn echo_user() -> anyhow::Result<Option<UserData>> {
 /// E.g. if the server is unreachable. Hence Result<()>
 pub async fn logout() -> anyhow::Result<()> {
     console_log_str("logging out".to_string());
-    TimeoutFuture::new(500).await;
+    TimeoutFuture::new(250).await;
     unset_document_cookie(AUTH_TOKEN_COOKIE_NAME).expect("To be able to unset a cookie");
 
     Ok(())
@@ -64,7 +64,7 @@ pub async fn login() -> anyhow::Result<UserData> {
     console_log_str("logging in".to_string());
     // The below is a stand-in for calling a "login" endpoint, which in a real-world
     // context would set an auth-cookie
-    TimeoutFuture::new(500).await;
+    TimeoutFuture::new(250).await;
     set_document_cookie(AUTH_TOKEN_COOKIE_NAME, "bananas")?;
 
     // After this point, an auth cookie would be available which means we can fetch the user data
