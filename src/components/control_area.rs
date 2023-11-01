@@ -123,6 +123,15 @@ impl LoginAttemptStatus {
 
 #[component]
 pub fn ControlArea() -> impl IntoView {
+    // Import the user-data setter context from the parent 'App'
+    let set_user_data = use_context::<UserDataWriteSignal>()
+        .expect("user-data setting context should be available");
+
+    // Create a local signal which keeps track of login attempts (i.e. success, failure, in-progress, ect..)
+    let (login_tracker, set_login_tracker) = create_signal(LoginAttemptStatus::NoUser);
+
+    // Define a function which can handle Login attempts. Since this potentially talks to a backend
+    // server, it will need to be wrapped in a 'create_local_resource'
     let try_next_login_attempt = |tracker: LoginAttemptStatus| async move {
         match tracker {
             LoginAttemptStatus::NeedsLogin => {
@@ -144,19 +153,13 @@ pub fn ControlArea() -> impl IntoView {
         }
     };
 
-    let user_data =
-        use_context::<UserDataReadSignal>().expect("user-data reading context should be available");
-    let set_user_data = use_context::<UserDataWriteSignal>()
-        .expect("user-data setting context should be available");
-
-    let initial_status = match user_data.get_untracked() {
-        Some(user_data) => LoginAttemptStatus::Succeeded(user_data),
-        None => LoginAttemptStatus::NoUser,
-    };
-
-    let (login_tracker, set_login_tracker) = create_signal(initial_status);
     let login_action = create_local_resource(move || login_tracker.get(), try_next_login_attempt);
 
+    // In order to link the internal signal 'login_tracker' to the parent App's 'user-data' context, I need a way to
+    // update the latter whenever the former changes. The only way I can get this to work is to use a `create_effect`.
+    // However this is specifically AGAINST the create_effect docs, which state that one should not use create_effect
+    // to perform any sort of setting within the Leptos reactive system. The docs suggest using a memo, or a derived
+    // signal, but nether seem to work here
     create_effect(move |_| {
         let _login_action = login_action.get().unwrap_or(LoginAttemptStatus::None);
         console_log_str(format!("Calling login tracker effect -- {}", _login_action));
@@ -166,8 +169,10 @@ pub fn ControlArea() -> impl IntoView {
         }
     });
 
-    // Check if is already logged-in from a previous session. If so, update the user-data signal. This
-    // requires talking with the backend server, and so must be async (hence create_local_resource)
+    // Additionally, I want to check if there is already a logged-in user from a previous session. If so, I need to
+    // update the login-tracker signal. This requires talking with the backend server, and so must be async (hence
+    // another create_local_resource). Again, to link this back into the reactive system, I could only get it to
+    // work with another create_effect
     let cached_user_data = create_local_resource(
         || (),
         |_| async move {
