@@ -4,9 +4,7 @@ use leptos::*;
 use crate::util::{
     bindings::console_log_str,
     cookie_management::{search_for_cookie, AUTH_TOKEN_COOKIE_NAME},
-    user_management::{
-        echo_user, login, logout, UserData, UserDataReadSignal, UserDataWriteSignal,
-    },
+    user_management::{echo_user, login, logout, UserData, UserDataWriteSignal},
 };
 
 #[derive(PartialEq, Clone)]
