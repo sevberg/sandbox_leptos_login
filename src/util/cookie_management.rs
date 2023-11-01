@@ -11,6 +11,7 @@ fn process_key_value_str(key_value_str: &str) -> Option<(&str, &str)> {
     }
 }
 
+// Get the current HtmlDocument
 fn get_document() -> anyhow::Result<HtmlDocument> {
     let window = match window() {
         Some(val) => val,
@@ -28,6 +29,7 @@ fn get_document() -> anyhow::Result<HtmlDocument> {
     }
 }
 
+// Get all cookies in the current HtmlDocument
 pub fn get_document_cookies() -> anyhow::Result<String> {
     let cookies = get_document()?
         .cookie()
@@ -36,6 +38,7 @@ pub fn get_document_cookies() -> anyhow::Result<String> {
     Ok(cookies)
 }
 
+// Set a cookie with the given `key` to the given `value`
 pub fn set_document_cookie(key: &str, value: &str) -> anyhow::Result<()> {
     let document = get_document()?;
     document
@@ -45,10 +48,12 @@ pub fn set_document_cookie(key: &str, value: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
+// Set a cookie with the given `key`` to "invalid"
 pub fn unset_document_cookie(key: &str) -> anyhow::Result<()> {
     set_document_cookie(key, "invalid")
 }
 
+// Search the current HtmlDocument for a specific cookie, and return it's value
 pub fn search_for_cookie(key: &str) -> anyhow::Result<Option<String>> {
     let all_cookies = get_document_cookies()?;
     let expected_cookie = all_cookies.split(":").find_map(|key_value_str| {

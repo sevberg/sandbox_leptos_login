@@ -7,6 +7,10 @@ use crate::util::{
     user_management::{echo_user, login, logout, UserData, UserDataWriteSignal},
 };
 
+// I need a way to track the outcome of Login attempts. The solution I eventually landed on
+// involved creating the following enum, which I can then use as a signal in the component
+// below. Each iteration of this enum will have a distinct view in the component, so I
+// also implemented a view generator function for each case.
 #[derive(PartialEq, Clone)]
 pub enum LoginAttemptStatus {
     None,
