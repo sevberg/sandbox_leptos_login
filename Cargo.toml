@@ -1,0 +1,19 @@
+[package]
+name = "leptos_help_request_login"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.75"
+gloo-net = "0.4.0"
+gloo-timers = { version = "0.3.0", features = ["futures"] }
+leptos = { version = "0.5.2", features = ["csr"] }
+serde = { version = "1.0.190", features = ["derive"] }
+serde-wasm-bindgen = "0.6.1"
+serde_json = "1.0.108"
+urlencoding = "2.1.3"
+wasm-bindgen = "0.2.87"
+web-sys = { version = "0.3.64", features = ["HtmlDocument", "Window"] }
