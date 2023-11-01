@@ -12,6 +12,14 @@ The main components are:
 - `Display-Area`: A component which watches the App's `user_data` context, and constructs it's
   view accordingly
 
+## Usage
+
+After cloning this repo, run me with:
+
+```bash
+trunk serve
+```
+
 ## The Problem
 
 Since logging-in requires talking to a backend server in an async function call, the Control-Area
